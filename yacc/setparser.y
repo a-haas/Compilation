@@ -1,44 +1,32 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
-	#include <math.h>
-
-	#include "setparser.h"
 
 	int yylex();
 	void yyerror(char *);
 
 	// we have at max 26 variable (a-z)
-	unsigned long int identarray[25];
+	int identarray[25];
 
 	// add a value in the array
-	void affectident(char id, unsigned long int val){
+	void affectident(char id, int val){
 		identarray[id - 'A'] = val;
 	}
 
 	// get a value in the array
-	unsigned long int getident(char id){
+	int getident(char id){
 		return identarray[id - 'A'];
 	}
 
 	void printset(char id){
-		unsigned long int set = getident(id);
-		int flag = 0;
-		int i=32;
-		printf("\t{ ");
-		for(i>0; i--;){
-			// greatest pow
-			unsigned long int gpow = (unsigned long int)(pow(2, i -1)+0.5);
-			if(gpow <= set){
-				if(!flag){
-					flag = !flag;
-					printf("%d", i);
-				}
-				else
-					printf(", %d", i);
-
-				set -= gpow;
-			}
+		int value = getident(id);
+		int size = 32;
+		int i;
+		printf("{ ");
+		for(i = 0; i < 32; i++) {
+		    int binary = (value >> (size - i) - 1) & 1;
+		    if (binary)
+		    	printf("%d ", size - i);
 		}
 		printf(" }\n");
 	}
@@ -46,7 +34,7 @@
 %}
 
 %union {
-	unsigned long int set;
+	int set;
 	int val;
 }
 
@@ -145,7 +133,7 @@ ensemble:
 
 elemliste:
 	NUMBER {
-		$$ = (unsigned long int)(pow(2, $1 -1)+0.5);
+		$$ = 1 << ($1 -1);
 	}
 	| NUMBER ',' elemliste {
 		// un ensemble est l'union de certains ensembles élémentaires (1, 2, ... 32) 
